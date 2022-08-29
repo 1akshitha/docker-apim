@@ -1,0 +1,159 @@
+# Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+version: '2.3'
+services:
+  mysql:
+    image: arm64v8/mysql:oracle
+    ports:
+      - 3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./mysql/scripts:/docker-entrypoint-initdb.d
+      - ./mysql/conf/my.cnf:/etc/mysql/mysql.conf.d/my.cnf
+    ulimits:
+      nofile:
+        soft: 20000
+        hard: 40000
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-uroot", "-proot"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+  traffic-manager-1:
+    image: docker.wso2.com/wso2am:4.0.0.134
+    ports:
+      - 9443
+      - 5672
+      - 9711
+      - 9611
+    environment:
+      - PROFILE_NAME=traffic-manager
+    healthcheck:
+      test: ["CMD", "nc", "-z","localhost", "9443"]
+      interval: 10s
+      start_period: 100s
+      retries: 10
+    depends_on:
+      apim-cp-1:
+        condition: service_healthy
+    volumes:
+      - ./traffic-manager-1/config:/home/wso2carbon/wso2-config-volume
+      - ./traffic-manager-1/artifact:/home/wso2carbon/wso2-artifact-volume
+  traffic-manager-2:
+    image: docker.wso2.com/wso2am:4.0.0.134
+    ports:
+      - 9443
+      - 5672
+      - 9711
+      - 9611
+    environment:
+      - PROFILE_NAME=traffic-manager
+    healthcheck:
+      test: ["CMD", "nc", "-z","localhost", "9443"]
+      interval: 10s
+      start_period: 100s
+      retries: 10
+    depends_on:
+      apim-cp-1:
+        condition: service_healthy
+    volumes:
+      - ./traffic-manager-2/config:/home/wso2carbon/wso2-config-volume
+      - ./traffic-manager-2/artifact:/home/wso2carbon/wso2-artifact-volume
+  gateway:
+    image: docker.wso2.com/wso2am:4.0.0.134
+    ports:
+      - 8243
+      - 9443
+    environment:
+      - PROFILE_NAME=gateway-worker
+    healthcheck:
+      test: ["CMD", "nc", "-z","localhost", "8243"]
+      interval: 10s
+      start_period: 100s
+      retries: 10
+    depends_on:
+      mysql:
+        condition: service_healthy
+      apim-cp-1:
+        condition: service_healthy
+      traffic-manager-1:
+        condition: service_healthy
+    volumes:
+      - ./gateway/config:/home/wso2carbon/wso2-config-volume
+      - ./gateway/artifact:/home/wso2carbon/wso2-artifact-volume
+  apim-cp-1:
+    image: docker.wso2.com/wso2am:4.0.0.134
+    ports:
+      - 9443
+      - 5672
+      - 9711
+      - 9611
+    environment:
+      - PROFILE_NAME=control-plane  
+    healthcheck:
+      test: ["CMD", "nc", "-z","localhost", "9443"]
+      interval: 10s
+      start_period: 100s
+      retries: 10
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./apim-cp-1/config:/home/wso2carbon/wso2-config-volume
+      - ./apim-cp-1/artifact:/home/wso2carbon/wso2-artifact-volume
+  apim-cp-2:
+    image: docker.wso2.com/wso2am:4.0.0.134
+    ports:
+      - 9443
+      - 5672
+      - 9711
+      - 9611
+    environment:
+      - PROFILE_NAME=control-plane  
+    healthcheck:
+      test: ["CMD", "nc", "-z","localhost", "9443"]
+      interval: 10s
+      start_period: 100s
+      retries: 10
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./apim-cp-2/config:/home/wso2carbon/wso2-config-volume
+      - ./apim-cp-2/artifact:/home/wso2carbon/wso2-artifact-volume
+  nginx:
+    build:
+      context: nginx
+    depends_on:
+      gateway:
+        condition: service_healthy
+      apim-cp-1:
+        condition: service_healthy
+      traffic-manager:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nc", "-z","localhost", "443"]
+      interval: 10s
+      start_period: 100s
+      retries: 10
+    ports:
+      - 443:443
+    volumes:
+      - ./nginx/sites-enabled:/etc/nginx/sites-enabled
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
