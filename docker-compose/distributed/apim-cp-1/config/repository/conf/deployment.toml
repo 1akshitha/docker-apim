@@ -89,7 +89,8 @@ enable = true
 username = "admin@wso2.com@carbon.super"
 password = "$ref{super_admin.password}"
 service_url = "https://api.am.wso2.com/services/"
-event_listening_endpoints = ["tcp://apim-cp-1:5672","tcp://apim-cp-2:5672"]
+event_listening_endpoints = ["tcp://localhost:5672"]
+event_duplicate_url = ["tcp://apim-cp-2:5672"]
 
 [apim.event_hub.jms]
 username = "admin!wso2.com!carbon.super"
