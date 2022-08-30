@@ -34,10 +34,70 @@ services:
       timeout: 60s
       retries: 5
       start_period: 80s
+  gateway:
+    build: ./dockerfiles/gateway
+    ports:
+      - 49701:8243
+      - 49700:9443
+    environment:
+      - PROFILE_NAME=gateway-worker
+    healthcheck:
+      test: ["CMD", "nc", "-z","localhost", "8243"]
+      interval: 10s
+      start_period: 100s
+      retries: 10
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./gateway/config:/home/wso2carbon/wso2-config-volume
+      - ./gateway/artifact:/home/wso2carbon/wso2-artifact-volume
+  apim-cp-1:
+    build: ./dockerfiles/apim-cp-1
+    ports:
+      - 49500:9443
+      - 5672
+      - 9711
+      - 9611
+    environment:
+      - PROFILE_NAME=control-plane  
+    healthcheck:
+      test: ["CMD", "nc", "-z","localhost", "9443"]
+      interval: 10s
+      start_period: 100s
+      retries: 10
+    depends_on:
+      gateway:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./apim-cp-1/config:/home/wso2carbon/wso2-config-volume
+      - ./apim-cp-1/artifact:/home/wso2carbon/wso2-artifact-volume
+  apim-cp-2:
+    build: ./dockerfiles/apim-cp-2
+    ports:
+      - 49600:9443
+      - 5672
+      - 9711
+      - 9611
+    environment:
+      - PROFILE_NAME=control-plane  
+    healthcheck:
+      test: ["CMD", "nc", "-z","localhost", "9443"]
+      interval: 10s
+      start_period: 100s
+      retries: 10
+    depends_on:
+      apim-cp-1:
+        condition: service_healthy
+    volumes:
+      - ./apim-cp-2/config:/home/wso2carbon/wso2-config-volume
+      - ./apim-cp-2/artifact:/home/wso2carbon/wso2-artifact-volume
   traffic-manager-1:
     build: ./dockerfiles/traffic-manager-1
     ports:
-      - 9443
+      - 49800:9443
       - 5672
       - 9711
       - 9611
@@ -57,7 +117,7 @@ services:
   traffic-manager-2:
     build: ./dockerfiles/traffic-manager-2
     ports:
-      - 9443
+      - 49900:9443
       - 5672
       - 9711
       - 9611
@@ -74,83 +134,4 @@ services:
     volumes:
       - ./traffic-manager-2/config:/home/wso2carbon/wso2-config-volume
       - ./traffic-manager-2/artifact:/home/wso2carbon/wso2-artifact-volume
-  gateway:
-    build: ./dockerfiles/gateway
-    ports:
-      - 8243
-      - 9443
-    environment:
-      - PROFILE_NAME=gateway-worker
-    healthcheck:
-      test: ["CMD", "nc", "-z","localhost", "8243"]
-      interval: 10s
-      start_period: 100s
-      retries: 10
-    depends_on:
-      mysql:
-        condition: service_healthy
-    volumes:
-      - ./gateway/config:/home/wso2carbon/wso2-config-volume
-      - ./gateway/artifact:/home/wso2carbon/wso2-artifact-volume
-  apim-cp-1:
-    build: ./dockerfiles/apim-cp-1
-    ports:
-      - 9443
-      - 5672
-      - 9711
-      - 9611
-    environment:
-      - PROFILE_NAME=control-plane  
-    healthcheck:
-      test: ["CMD", "nc", "-z","localhost", "9443"]
-      interval: 10s
-      start_period: 100s
-      retries: 10
-    depends_on:
-      gateway:
-        condition: service_healthy
-    volumes:
-      - ./apim-cp-1/config:/home/wso2carbon/wso2-config-volume
-      - ./apim-cp-1/artifact:/home/wso2carbon/wso2-artifact-volume
-  apim-cp-2:
-    build: ./dockerfiles/apim-cp-2
-    ports:
-      - 9443
-      - 5672
-      - 9711
-      - 9611
-    environment:
-      - PROFILE_NAME=control-plane  
-    healthcheck:
-      test: ["CMD", "nc", "-z","localhost", "9443"]
-      interval: 10s
-      start_period: 100s
-      retries: 10
-    depends_on:
-      apim-cp-1:
-        condition: service_healthy
-    volumes:
-      - ./apim-cp-2/config:/home/wso2carbon/wso2-config-volume
-      - ./apim-cp-2/artifact:/home/wso2carbon/wso2-artifact-volume
-  nginx:
-    build:
-      context: nginx
-    depends_on:
-      apim-cp-1:
-        condition: service_healthy
-      traffic-manager-2:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "nc", "-z","localhost", "443"]
-      interval: 10s
-      start_period: 100s
-      retries: 10
-    ports:
-      - 443:443
-    volumes:
-      - ./nginx/sites-enabled:/etc/nginx/sites-enabled
-      - ./nginx/ssl:/etc/nginx/ssl
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/logs:/var/log/nginx
-      - ./nginx/logs/serverlogs:/etc/nginx/log/am/https
       

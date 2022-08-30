@@ -33,33 +33,6 @@ file_name = "client-truststore.jks"
 type = "JKS"
 password = "wso2carbon"
 
-
-[database.apim_db]
-type = "mysql"
-url = "jdbc:mysql://mysql:3306/WSO2AM_DB?autoReconnect=true&amp;useSSL=false&amp;allowPublicKeyRetrieval=true"
-username = "wso2carbon"
-password = "wso2carbon"
-driver = "com.mysql.cj.jdbc.Driver"
-
-
-# key manager implementation
-[apim.key_manager]
-service_url = "https://api.am.wso2.com/services/"
-username= "$ref{super_admin.username}"
-password= "$ref{super_admin.password}"
-type = "default"
-
-[apim.oauth_config]
-revoke_endpoint = "https://api.am.wso2.com/oauth2/revoke"
-enable_token_encryption = false
-
-[[apim.gateway.environment]]
-name= "us-eeast-1"
-type= "hybrid"
-description= "This is a hybrid gateway that handles both production and sandbox token traffic."
-ws_endpoint= "ws://api.gw.wso2.com:9099"
-https_endpoint = "https://api.gateway.wso2.com"
-
 # Event Hub configurations
 [apim.event_hub]
 enable = true
