@@ -11,10 +11,9 @@ server {
 }
 
 server {
-    listen 443;
+    listen 443 ssl;
     server_name tm.am.wso2.com;
     proxy_set_header X-Forwarded-Port 443;
-    ssl on;
     ssl_certificate /etc/nginx/ssl/server.crt;
     ssl_certificate_key /etc/nginx/ssl/apim.key;
     access_log /etc/nginx/log/am/https/tm-access.log;
