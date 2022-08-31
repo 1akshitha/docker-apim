@@ -1,7 +1,7 @@
 
 upstream sslapi.am.wso2.com {
-    server apim-cp-1:9443;
-    server apim-cp-2:9443 backup;
+    server am.components:49500;
+    server am.components:49600 backup;
 }
 
 server {

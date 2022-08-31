@@ -1,7 +1,7 @@
 
 upstream ssltm.am.wso2.com {
-    server traffic-manager-1:9443;
-    server traffic-manager-2:9443 backup;
+    server am.components:49800;
+    server am.components:49900 backup;
 }
 
 server {

@@ -1,9 +1,11 @@
-upstream gw.am.wso2.com {
-    server gateway:9443;
+upstream mgt.gw.am.wso2.com {
+    server am.components:49300;
+    server am.components:49400 backup;
 }
 
 upstream sslgw.am.wso2.com {
-    server gateway:8243;
+    server am.components:49301;
+    server am.components:49401 backup;
 }
 
 server {
@@ -28,7 +30,7 @@ server {
                proxy_set_header Host $http_host;
                proxy_read_timeout 5m;
                proxy_send_timeout 5m;
-               proxy_pass https://gw.am.wso2.com;
+               proxy_pass https://mgt.gw.am.wso2.com;
         }
 }
 
