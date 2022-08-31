@@ -34,11 +34,11 @@ services:
       timeout: 60s
       retries: 5
       start_period: 80s
-  gateway:
-    build: ./dockerfiles/gateway
+  gateway-1:
+    build: ./dockerfiles/gateway-1
     ports:
-      - 49701:8243
-      - 49700:9443
+      - 49301:8243
+      - 49300:9443
     environment:
       - PROFILE_NAME=gateway-worker
     healthcheck:
@@ -50,8 +50,26 @@ services:
       mysql:
         condition: service_healthy
     volumes:
-      - ./gateway/config:/home/wso2carbon/wso2-config-volume
-      - ./gateway/artifact:/home/wso2carbon/wso2-artifact-volume
+      - ./gateway-1/config:/home/wso2carbon/wso2-config-volume
+      - ./gateway-1/artifact:/home/wso2carbon/wso2-artifact-volume
+  gateway-2:
+    build: ./dockerfiles/gateway-2
+    ports:
+      - 49401:8243
+      - 49400:9443
+    environment:
+      - PROFILE_NAME=gateway-worker
+    healthcheck:
+      test: ["CMD", "nc", "-z","localhost", "8243"]
+      interval: 10s
+      start_period: 100s
+      retries: 10
+    depends_on:
+      gateway-1:
+        condition: service_healthy
+    volumes:
+      - ./gateway-2/config:/home/wso2carbon/wso2-config-volume
+      - ./gateway-2/artifact:/home/wso2carbon/wso2-artifact-volume
   apim-cp-1:
     build: ./dockerfiles/apim-cp-1
     ports:
@@ -67,7 +85,7 @@ services:
       start_period: 100s
       retries: 10
     depends_on:
-      gateway:
+      gateway-1:
         condition: service_healthy
       mysql:
         condition: service_healthy

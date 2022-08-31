@@ -30,6 +30,23 @@ file_name = "client-truststore.jks"
 type = "JKS"
 password = "wso2carbon"
 
+# key manager implementation
+[apim.key_manager]
+service_url = "https://api.am.wso2.com/services/"
+username= "$ref{super_admin.username}"
+password= "$ref{super_admin.password}"
+type = "default"
+
+[apim.sync_runtime_artifacts.gateway]
+gateway_labels =["us-east-1"]
+
+# Event Hub configurations
+[apim.event_hub]
+enable = true
+username = "$ref{super_admin.username}"
+password = "$ref{super_admin.password}"
+service_url = "https://api.am.wso2.com/services/"
+event_listening_endpoints = ["tcp://apim-cp-1:5672", "tcp://apim-cp-2:5672"]
 
 # Traffic Manager configurations
 [apim.throttling]
@@ -50,20 +67,3 @@ traffic_manager_auth_urls=["ssl://traffic-manager-1:9711"]
 traffic_manager_urls=["tcp://traffic-manager-2:9611"]
 traffic_manager_auth_urls=["ssl://traffic-manager-2:9711"]
 
-# key manager implementation
-[apim.key_manager]
-service_url = "https://api.am.wso2.com/services/"
-username= "$ref{super_admin.username}"
-password= "$ref{super_admin.password}"
-type = "default"
-
-[apim.sync_runtime_artifacts.gateway]
-gateway_labels =["us-east-1"]
-
-# Event Hub configurations
-[apim.event_hub]
-enable = true
-username = "$ref{super_admin.username}"
-password = "$ref{super_admin.password}"
-service_url = "https://api.am.wso2.com/services/"
-event_listening_endpoints = ["tcp://apim-cp-1:5672", "tcp://apim-cp-2:5672"]

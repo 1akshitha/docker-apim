@@ -45,8 +45,8 @@ description= "This is a hybrid gateway that handles both production and sandbox 
 service_url= "https://gwm.am.wso2.com/services/"
 username= "${admin.username}"
 password= "${admin.password}"
-ws_endpoint= "ws://api.gateway.wso2.com:9099"
-https_endpoint = "https://api.gateway.wso2.com"
+ws_endpoint= "ws://gw.am.wso2.com:9099"
+https_endpoint = "https://gw.am.wso2.com"
 
 [apim.devportal]
 url = "https://api.am.wso2.com/devportal"
